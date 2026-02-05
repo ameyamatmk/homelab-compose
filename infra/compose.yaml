@@ -1,0 +1,41 @@
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - /opt/homelab/volumes/npm/data:/data
+      - /opt/homelab/volumes/npm/letsencrypt:/etc/letsencrypt
+      - /opt/homelab/shared/certs:/certs:ro
+    environment:
+      - TZ=Asia/Tokyo
+      - DISABLE_IPV6=true
+    networks:
+      - homelab-net
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8053:80/tcp"
+    environment:
+      - TZ=Asia/Tokyo
+      - WEBPASSWORD=${PIHOLE_WEBPASSWORD}
+      - PIHOLE_DNS_=${PIHOLE_UPSTREAM_DNS:-1.1.1.1;8.8.8.8}
+      - FTLCONF_dns_listeningMode=all
+    volumes:
+      - /opt/homelab/volumes/pihole/etc:/etc/pihole
+      - /opt/homelab/volumes/pihole/dnsmasq:/etc/dnsmasq.d
+    networks:
+      - homelab-net
+
+networks:
+  homelab-net:
+    external: true

@@ -1,0 +1,36 @@
+services:
+  flame:
+    image: pawelmalak/flame
+    container_name: flame
+    restart: unless-stopped
+    ports:
+      - "5005:5005"
+    volumes:
+      - /opt/homelab/volumes/flame/data:/app/data
+    environment:
+      - TZ=Asia/Tokyo
+      - PASSWORD=${FLAME_PASSWORD}
+    networks:
+      - homelab-net
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - /opt/homelab/volumes/uptime-kuma/data:/app/data
+      - /opt/homelab/shared/certs/rootCA.pem:/certs/rootCA.pem:ro
+    dns:
+      - ${HOST_IP:-192.168.25.20}
+      - 1.1.1.1
+    environment:
+      - TZ=Asia/Tokyo
+      - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+    networks:
+      - homelab-net
+
+networks:
+  homelab-net:
+    external: true
