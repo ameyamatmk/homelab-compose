@@ -1,0 +1,17 @@
+services:
+  money-forward-viewer:
+    image: ghcr.io/ameyamatmk/moneyforwardviewer:latest
+    container_name: money-forward-viewer
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - /opt/homelab/volumes/money-forward-viewer/data:/app/data
+    networks:
+      - homelab-net
+
+networks:
+  homelab-net:
+    external: true
