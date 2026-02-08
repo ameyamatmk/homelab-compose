@@ -12,6 +12,19 @@ services:
     networks:
       - homelab-net
 
+  memos:
+    image: neosmemo/memos:stable
+    container_name: memos
+    restart: unless-stopped
+    ports:
+      - "5230:5230"
+    volumes:
+      - /opt/homelab/volumes/memos:/var/opt/memos
+    environment:
+      - TZ=Asia/Tokyo
+    networks:
+      - homelab-net
+
 networks:
   homelab-net:
     external: true
