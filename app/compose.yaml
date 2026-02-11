@@ -27,6 +27,7 @@ services:
 
   kura-chat-sync-server:
     image: ghcr.io/ameyamatmk/kura-chat-sync-server:latest
+    pull_policy: always
     container_name: kura-chat-sync-server
     restart: unless-stopped
     ports:
