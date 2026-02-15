@@ -12,39 +12,6 @@ services:
     networks:
       - homelab-net
 
-  memos:
-    image: neosmemo/memos:stable
-    container_name: memos
-    restart: unless-stopped
-    ports:
-      - "5230:5230"
-    volumes:
-      - /opt/homelab/volumes/memos:/var/opt/memos
-    environment:
-      - TZ=Asia/Tokyo
-    networks:
-      - homelab-net
-
-  kura-chat-ai-gateway:
-    image: ghcr.io/ameyamatmk/kura-chat-ai-gateway:latest
-    pull_policy: always
-    container_name: kura-chat-ai-gateway
-    restart: unless-stopped
-    ports:
-      - "3443:3443"
-    environment:
-      - TZ=Asia/Tokyo
-      - PORT=3443
-      - SYNC_TOKEN=${SYNC_TOKEN}
-      - ALLOWED_ORIGIN=https://kura-chat.pages.dev
-      - DB_PATH=/app/data/kura-chat.db
-      - WORKER_BASE_URL=${WORKER_BASE_URL}
-      - APP_TOKEN=${APP_TOKEN}
-    volumes:
-      - /opt/homelab/volumes/kura-chat-ai-gateway/data:/app/data
-    networks:
-      - homelab-net
-
 networks:
   homelab-net:
     external: true
