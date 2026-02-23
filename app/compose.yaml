@@ -12,6 +12,28 @@ services:
     networks:
       - homelab-net
 
+  annict-viewer:
+    image: ghcr.io/ameyamatmk/annictviewer:main
+    container_name: annict-viewer
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_URL=${AUTH_URL}
+      - ANNICT_CLIENT_ID=${ANNICT_CLIENT_ID}
+      - ANNICT_CLIENT_SECRET=${ANNICT_CLIENT_SECRET}
+      - DATABASE_URL=file:/app/data/sqlite.db
+    volumes:
+      - /opt/homelab/volumes/annict-viewer/data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - homelab-net
+
 networks:
   homelab-net:
     external: true
