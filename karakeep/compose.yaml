@@ -1,0 +1,79 @@
+services:
+  karakeep:
+    image: ghcr.io/karakeep-app/karakeep:${KARAKEEP_VERSION:-release}
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - MEILI_ADDR=http://karakeep-meilisearch:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - BROWSER_WEB_URL=http://karakeep-chrome:9222
+      - DATA_DIR=/data
+      - INFERENCE_ENABLE_AUTO_TAGGING=false
+      - INFERENCE_ENABLE_AUTO_SUMMARIZATION=false
+      - CRAWLER_ALLOWED_INTERNAL_HOSTNAMES=karakeep-pipeline
+    volumes:
+      - /opt/homelab/volumes/karakeep/data:/data
+    networks:
+      - homelab-net
+      - karakeep-internal
+
+  chrome:
+    image: gcr.io/zenika-hub/alpine-chrome:124
+    container_name: karakeep-chrome
+    restart: unless-stopped
+    command:
+      - --no-sandbox
+      - --disable-gpu
+      - --disable-dev-shm-usage
+      - --remote-debugging-address=0.0.0.0
+      - --remote-debugging-port=9222
+      - --hide-scrollbars
+    networks:
+      - karakeep-internal
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.13.3
+    container_name: karakeep-meilisearch
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - /opt/homelab/volumes/karakeep/meilisearch:/meili_data
+    networks:
+      - karakeep-internal
+
+  reader:
+    image: ghcr.io/intergalacticalvariable/reader:latest
+    container_name: karakeep-reader
+    restart: unless-stopped
+    volumes:
+      - /opt/homelab/volumes/karakeep/reader-storage:/app/local-storage
+    networks:
+      - karakeep-internal
+
+  pipeline:
+    image: ghcr.io/ameyamatmk/karakeep-pipeline:latest
+    container_name: karakeep-pipeline
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - KARAKEEP_BASE_URL=http://karakeep:3000
+      - KARAKEEP_API_KEY=${KARAKEEP_API_KEY}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - JINA_READER_URL=http://karakeep-reader:3000
+    volumes:
+      - /opt/homelab/volumes/karakeep/claude-config:/root/.claude
+    depends_on:
+      - reader
+    networks:
+      - karakeep-internal
+
+networks:
+  homelab-net:
+    external: true
+  karakeep-internal:
+    driver: bridge

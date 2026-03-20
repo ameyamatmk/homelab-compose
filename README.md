@@ -7,8 +7,9 @@
 ```
 homelab-compose/
 ├── infra/          → NPM + Pi-hole（基盤サービス）
-├── ops/     → Uptime Kuma + Flame（運用支援）
-└── app/            → アプリケーション群（ghcr.io からの pull）
+├── ops/            → Uptime Kuma + Flame（運用支援）
+├── app/            → アプリケーション群（ghcr.io からの pull）
+└── karakeep/       → Karakeep + AI要約パイプライン
 ```
 
 ## Portainer スタック設定
@@ -18,6 +19,7 @@ homelab-compose/
 | infra | `infra/compose.yaml` |
 | ops | `ops/compose.yaml` |
 | app | `app/compose.yaml` |
+| karakeep | `karakeep/compose.yaml` |
 
 ## セットアップ
 
