@@ -1,0 +1,13 @@
+# immich-ml-remote/compose.yaml
+services:
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich-ml-remote
+    ports:
+      - "3003:3003"
+    volumes:
+      - model-cache:/cache
+    restart: unless-stopped
+
+volumes:
+  model-cache:

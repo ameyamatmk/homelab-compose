@@ -83,6 +83,15 @@ services:
     networks:
       - immich-internal
 
+  immich-folder-album-creator:
+    image: salvoxia/immich-folder-album-creator:latest
+    restart: unless-stopped
+    environment:
+      - API_URL=http://immich-server:2283/api
+      - API_KEY=${IMMICH_API_KEY}
+      - ROOT_PATH=/mnt/nas/photos
+      - CRON_EXPRESSION=0 */6 * * *
+
 networks:
   homelab-net:
     external: true
