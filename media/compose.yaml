@@ -91,6 +91,8 @@ services:
       - API_KEY=${IMMICH_API_KEY}
       - ROOT_PATH=/mnt/nas/photos
       - CRON_EXPRESSION=0 */6 * * *
+    networks:
+      - immich-internal
 
 networks:
   homelab-net:
