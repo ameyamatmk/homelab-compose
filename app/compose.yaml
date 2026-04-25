@@ -36,6 +36,28 @@ services:
     networks:
       - homelab-net
 
+  voitra:
+    image: ghcr.io/ameyamatmk/voitra:latest
+    container_name: voitra
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Asia/Tokyo
+      - VOITRA_API_KEY=${VOITRA_API_KEY}
+      - VOITRA_DB_PATH=/data/voitra.db
+    volumes:
+      - /opt/homelab/volumes/voitra/data:/data
+    healthcheck:
+      # distroless にシェル/wget/curl が無いため、バイナリの self-check モードを使う
+      test: ["CMD", "/voitra", "--healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - homelab-net
+
 networks:
   homelab-net:
     external: true
