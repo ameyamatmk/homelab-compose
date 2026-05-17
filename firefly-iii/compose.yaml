@@ -76,6 +76,10 @@ services:
     image: ghcr.io/ameyamatmk/firefly-mail-ingester:latest
     container_name: firefly-iii-mail-ingester
     restart: unless-stopped
+    ports:
+      # OAuth コールバックを SSH ポートフォワード経由で受けるため、ホスト localhost にだけバインド。
+      # LAN には公開しない (dashboard は NPM が homelab-net 内部通信で別ルートで参照する)。
+      - "127.0.0.1:8000:8000"
     environment:
       - TZ=Asia/Tokyo
       # Server
