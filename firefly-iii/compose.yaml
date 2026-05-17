@@ -1,0 +1,112 @@
+services:
+  app:
+    image: fireflyiii/core:latest
+    container_name: firefly-iii-core
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - SITE_OWNER=${SITE_OWNER}
+      - DEFAULT_LANGUAGE=ja_JP
+      - DEFAULT_LOCALE=ja_JP
+      - TRUSTED_PROXIES=**
+      - DB_CONNECTION=mysql
+      - DB_HOST=firefly-iii-db
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+    volumes:
+      - /opt/homelab/volumes/firefly-iii/upload:/var/www/html/storage/upload
+    networks:
+      - homelab-net
+      - firefly-internal
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:lts
+    container_name: firefly-iii-db
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+    volumes:
+      - /opt/homelab/volumes/firefly-iii/db:/var/lib/mysql
+    networks:
+      - firefly-internal
+
+  cron:
+    image: alpine
+    container_name: firefly-iii-cron
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+    command: ["sh", "-c", "apk add tzdata && (ln -s /usr/share/zoneinfo/$$TZ /etc/localtime || true) && echo \"0 3 * * * wget -qO- http://firefly-iii-core:8080/api/v1/cron/$$STATIC_CRON_TOKEN;echo\" | crontab - && crond -f -L /dev/stdout"]
+    networks:
+      - firefly-internal
+    depends_on:
+      - app
+
+  lampyrid:
+    image: ghcr.io/radcod3/lampyrid:latest
+    container_name: firefly-iii-lampyrid
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - FIREFLY_BASE_URL=http://firefly-iii-core:8080
+      - FIREFLY_TOKEN=${LAMPYRID_FIREFLY_TOKEN}
+      - MCP_TRANSPORT=http
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=3000
+      - LOGGING_LEVEL=INFO
+    networks:
+      - homelab-net
+      - firefly-internal
+    depends_on:
+      - app
+
+  mail-ingester:
+    image: ghcr.io/ameyamatmk/firefly-mail-ingester:latest
+    container_name: firefly-iii-mail-ingester
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      # Server
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=8000
+      - SERVER_BASE_URL=${MAIL_INGESTER_PUBLIC_URL}
+      # Google OAuth
+      - GOOGLE_CLIENT_ID=${MAIL_INGESTER_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${MAIL_INGESTER_GOOGLE_CLIENT_SECRET}
+      # Storage
+      - OAUTH_ENCRYPTION_KEY=${MAIL_INGESTER_OAUTH_ENCRYPTION_KEY}
+      - STATE_DB_PATH=/app/data/state.db
+      # Firefly III (内部ネットワーク経由で直接アクセス)
+      - FIREFLY_BASE_URL=http://firefly-iii-core:8080
+      - FIREFLY_TOKEN=${MAIL_INGESTER_FIREFLY_TOKEN}
+      # Worker
+      - POLL_INTERVAL_MINUTES=30
+      - INITIAL_CURSOR_DAYS=7
+      - SOURCES_CONFIG_PATH=/app/config/sources.yaml
+      - LOG_LEVEL=INFO
+    volumes:
+      - /opt/homelab/volumes/firefly-iii/mail-ingester/data:/app/data
+      - /opt/homelab/volumes/firefly-iii/mail-ingester/config:/app/config
+    networks:
+      - homelab-net          # NPM 経由でダッシュボード / OAuth コールバックにアクセス
+      - firefly-internal     # Firefly III API への直接アクセス
+    depends_on:
+      - app
+
+networks:
+  homelab-net:
+    external: true
+  firefly-internal:
+    driver: bridge
