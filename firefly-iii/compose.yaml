@@ -81,8 +81,11 @@ services:
       # Server
       - WEB_HOST=0.0.0.0
       - WEB_PORT=8000
-      - SERVER_BASE_URL=${MAIL_INGESTER_PUBLIC_URL}
-      # Google OAuth
+      # OAuth コールバック専用 base URL (Desktop app クライアント前提で localhost 固定)。
+      # dashboard アクセスは NPM 経由 (https://mail-ingester.homelab.local/dashboard)。
+      # 初回 / 再認可は SSH ポートフォワード (ssh -L 8000:localhost:8000 homelab) で行う。
+      - SERVER_BASE_URL=http://localhost:8000
+      # Google OAuth (Desktop app クライアント種別で作成)
       - GOOGLE_CLIENT_ID=${MAIL_INGESTER_GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${MAIL_INGESTER_GOOGLE_CLIENT_SECRET}
       # Storage
@@ -100,7 +103,7 @@ services:
       - /opt/homelab/volumes/firefly-iii/mail-ingester/data:/app/data
       - /opt/homelab/volumes/firefly-iii/mail-ingester/config:/app/config
     networks:
-      - homelab-net          # NPM 経由でダッシュボード / OAuth コールバックにアクセス
+      - homelab-net          # NPM 経由のダッシュボードアクセス用
       - firefly-internal     # Firefly III API への直接アクセス
     depends_on:
       - app
