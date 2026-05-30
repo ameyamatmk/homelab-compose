@@ -102,7 +102,7 @@ services:
       - POLL_INTERVAL_MINUTES=30
       - INITIAL_CURSOR_DAYS=7
       - SOURCES_CONFIG_PATH=/app/config/sources.yaml
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - /opt/homelab/volumes/firefly-iii/mail-ingester/data:/app/data
       - /opt/homelab/volumes/firefly-iii/mail-ingester/config:/app/config
