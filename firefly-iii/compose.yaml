@@ -72,9 +72,9 @@ services:
     depends_on:
       - app
 
-  mail-ingester:
-    image: ghcr.io/ameyamatmk/firefly-mail-ingester:latest
-    container_name: firefly-iii-mail-ingester
+  ingester:
+    image: ghcr.io/ameyamatmk/firefly-ingester:latest
+    container_name: firefly-iii-ingester
     restart: unless-stopped
     ports:
       # OAuth コールバックを SSH ポートフォワード経由で受けるため、ホスト localhost にだけバインド。
@@ -104,8 +104,8 @@ services:
       - SOURCES_CONFIG_PATH=/app/config/sources.yaml
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
-      - /opt/homelab/volumes/firefly-iii/mail-ingester/data:/app/data
-      - /opt/homelab/volumes/firefly-iii/mail-ingester/config:/app/config
+      - /opt/homelab/volumes/firefly-iii/ingester/data:/app/data
+      - /opt/homelab/volumes/firefly-iii/ingester/config:/app/config
     networks:
       - homelab-net          # NPM 経由のダッシュボードアクセス用
       - firefly-internal     # Firefly III API への直接アクセス
