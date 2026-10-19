@@ -86,7 +86,7 @@ services:
       - WEB_HOST=0.0.0.0
       - WEB_PORT=8000
       # OAuth コールバック専用 base URL (Desktop app クライアント前提で localhost 固定)。
-      # dashboard アクセスは NPM 経由 (https://mail-ingester.homelab.local/dashboard)。
+      # dashboard アクセスは NPM 経由 (https://firefly-ingester.homelab.local/dashboard)。
       # 初回 / 再認可は SSH ポートフォワード (ssh -L 8000:localhost:8000 homelab) で行う。
       - SERVER_BASE_URL=http://localhost:8000
       # Google OAuth (Desktop app クライアント種別で作成)
@@ -98,6 +98,8 @@ services:
       # Firefly III (内部ネットワーク経由で直接アクセス)
       - FIREFLY_BASE_URL=http://firefly-iii-core:8080
       - FIREFLY_TOKEN=${MAIL_INGESTER_FIREFLY_TOKEN}
+      # スマホ通知 (POST /notifications) の bearer token。未設定だと 503 を返す
+      - NOTIFY_INGEST_TOKEN=${NOTIFY_INGEST_TOKEN}
       # Worker
       - POLL_INTERVAL_MINUTES=30
       - INITIAL_CURSOR_DAYS=7
